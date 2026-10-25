@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-export type WorkspaceTab = 'board' | 'projects' | 'analyzer' | 'growth' | 'showcase' | 'storage' | 'avis';
+export type WorkspaceTab =
+  | 'dashboard'
+  | 'board'
+  | 'projects'
+  | 'tasks'
+  | 'analyzer'
+  | 'growth'
+  | 'showcase'
+  | 'storage'
+  | 'avis';
 
 interface HeaderProps {
-  activeTab: WorkspaceTab;
-  onTabChange: (tab: WorkspaceTab) => void;
+  activeTab?: WorkspaceTab;
+  onTabChange?: (tab: WorkspaceTab) => void;
   onIntro: () => void;
   onTimer: () => void;
   timerRunning: boolean;
@@ -12,7 +22,7 @@ interface HeaderProps {
   theme: 'dark' | 'light';
   onThemeToggle: () => void;
   onSignOut: () => void;
-  onOpenPublicShowcase: () => void;
+  onOpenPublicShowcase?: () => void;
 }
 
 export function Header({
@@ -28,6 +38,8 @@ export function Header({
   onOpenPublicShowcase,
 }: HeaderProps) {
   const [clock, setClock] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const tick = () => {
@@ -38,53 +50,103 @@ export function Header({
     return () => clearInterval(id);
   }, []);
 
+  const path = location.pathname;
+  const currentTab: WorkspaceTab = activeTab || (
+    path.startsWith('/projects')
+      ? 'projects'
+      : path.startsWith('/tasks')
+      ? 'tasks'
+      : path.startsWith('/notes') || path.startsWith('/board')
+      ? 'board'
+      : path.startsWith('/analyzer')
+      ? 'analyzer'
+      : path.startsWith('/growth')
+      ? 'growth'
+      : path.startsWith('/showcase-cms')
+      ? 'showcase'
+      : path.startsWith('/storage')
+      ? 'storage'
+      : path.startsWith('/avis')
+      ? 'avis'
+      : 'dashboard'
+  );
+
+  const handleNav = (tab: WorkspaceTab, targetUrl: string) => {
+    if (onTabChange) onTabChange(tab);
+    navigate(targetUrl);
+  };
+
+  const handlePublicClick = () => {
+    if (onOpenPublicShowcase) {
+      onOpenPublicShowcase();
+    } else {
+      navigate('/showcase');
+    }
+  };
+
   return (
     <header>
-      <div className="brand" style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+      <div
+        className="brand"
+        onClick={() => handleNav('dashboard', '/dashboard')}
+        style={{ display: 'flex', alignItems: 'baseline', gap: '8px', cursor: 'pointer' }}
+      >
         <span>Workspace<i> / yours</i></span>
       </div>
 
       <nav id="nav" style={{ overflowX: 'auto', maxWidth: '100%' }}>
         <button
-          className={activeTab === 'board' ? 'on' : ''}
-          onClick={() => onTabChange('board')}
+          className={currentTab === 'dashboard' ? 'on' : ''}
+          onClick={() => handleNav('dashboard', '/dashboard')}
+        >
+          Dashboard
+        </button>
+        <button
+          className={currentTab === 'board' ? 'on' : ''}
+          onClick={() => handleNav('board', '/notes')}
         >
           Notesboard
         </button>
         <button
-          className={activeTab === 'projects' ? 'on' : ''}
-          onClick={() => onTabChange('projects')}
+          className={currentTab === 'projects' ? 'on' : ''}
+          onClick={() => handleNav('projects', '/projects')}
         >
           Projects
         </button>
         <button
-          className={activeTab === 'analyzer' ? 'on' : ''}
-          onClick={() => onTabChange('analyzer')}
+          className={currentTab === 'tasks' ? 'on' : ''}
+          onClick={() => handleNav('tasks', '/tasks')}
+        >
+          Tasks
+        </button>
+        <button
+          className={currentTab === 'analyzer' ? 'on' : ''}
+          onClick={() => handleNav('analyzer', '/analyzer')}
         >
           Analyzer
         </button>
         <button
-          className={activeTab === 'growth' ? 'on' : ''}
-          onClick={() => onTabChange('growth')}
+          className={currentTab === 'growth' ? 'on' : ''}
+          onClick={() => handleNav('growth', '/growth')}
         >
           Growth
         </button>
         <button
-          className={activeTab === 'showcase' ? 'on' : ''}
-          onClick={() => onTabChange('showcase')}
+          className={currentTab === 'showcase' ? 'on' : ''}
+          onClick={() => handleNav('showcase', '/showcase-cms')}
         >
           Showcase CMS
         </button>
         <button
-          className={activeTab === 'storage' ? 'on' : ''}
-          onClick={() => onTabChange('storage')}
+          className={currentTab === 'storage' ? 'on' : ''}
+          onClick={() => handleNav('storage', '/storage')}
         >
           Storage
         </button>
         <button
-          className={activeTab === 'avis' ? 'on' : ''}
-          onClick={() => onTabChange('avis')}
-          style={{ color: activeTab === 'avis' ? '#000' : 'var(--gold)' }}
+          className={currentTab === 'avis' ? 'on' : ''}
+          onClick={() => handleNav('avis', '/avis')}
+          style={{ color: currentTab === 'avis' ? '#000' : 'var(--gold)' }}
         >
           A.V.I.S.
         </button>
@@ -92,12 +154,21 @@ export function Header({
 
       <div className="meta">
         <button
-          onClick={onOpenPublicShowcase}
+          onClick={handlePublicClick}
           className="tg"
-          style={{ color: 'var(--tx)', border: '1px solid var(--ln2)', marginRight: '6px' }}
-          title="Open Public Showcase"
+          style={{
+            color: 'var(--tx)',
+            border: '1px solid var(--ln2)',
+            marginRight: '6px',
+            fontSize: '10px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+          title="Open Public Showcase Platform"
         >
-          Public Showcase ↗
+          <span>Public Showcase</span>
+          <span style={{ color: '#00e5ff' }}>↗</span>
         </button>
         <span className="pulse" />
         <span id="clock">{clock}</span>

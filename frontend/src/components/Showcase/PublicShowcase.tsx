@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -256,7 +257,22 @@ function generateCoverSvg(p: ShowcaseProject): string {
 }
 
 export function PublicShowcase({ onGoToWorkspace }: PublicShowcaseProps) {
-  const [currentPage, setCurrentPage] = useState<string>('about');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [currentPage, setCurrentPage] = useState<string>(() => {
+    try {
+      const p = window.location.pathname;
+      if (p.includes('/work')) return 'work';
+      if (p.includes('/library')) return 'library';
+      if (p.includes('/process')) return 'process';
+      if (p.includes('/contact')) return 'contact';
+      if (p.includes('/p/')) return 'work';
+      const h = window.location.hash.slice(1);
+      if (['about', 'work', 'library', 'process', 'contact'].includes(h)) return h;
+    } catch {}
+    return 'about';
+  });
   const [activeProject, setActiveProject] = useState<ShowcaseProject | null>(null);
   const [workFilter, setWorkFilter] = useState<string>('All');
   const [libFilter, setLibFilter] = useState<string>('All');
@@ -688,10 +704,10 @@ export function PublicShowcase({ onGoToWorkspace }: PublicShowcaseProps) {
       const dir = nextIdx > curIdx ? 'right' : 'left';
       executeCinematicWarp(id, dir);
       try {
-        window.history.replaceState(null, '', `#${id === 'about' ? 'showcase' : id}`);
+        navigate(`/showcase/${id === 'about' ? 'about' : id}`, { replace: true });
       } catch {}
     },
-    [currentPage, executeCinematicWarp]
+    [currentPage, executeCinematicWarp, navigate]
   );
 
   // Handle URL hash on initial load
