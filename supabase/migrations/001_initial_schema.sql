@@ -2,7 +2,7 @@
 create extension if not exists "uuid-ossp";
 
 -- Profiles (auto-created from auth.users)
-create table public.profiles (
+create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   display_name text,
@@ -11,7 +11,7 @@ create table public.profiles (
 );
 
 -- Projects
-create table public.projects (
+create table if not exists public.projects (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references public.profiles(id) on delete cascade,
   name text not null default '',
@@ -33,11 +33,11 @@ create table public.projects (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-create index projects_user_id_idx on public.projects(user_id);
-create index projects_status_idx on public.projects(status);
+create index if not exists projects_user_id_idx on public.projects(user_id);
+create index if not exists projects_status_idx on public.projects(status);
 
 -- Notes (board cards)
-create table public.notes (
+create table if not exists public.notes (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references public.profiles(id) on delete cascade,
   type text not null default 'note' check (type in ('note','img','doc')),
@@ -53,20 +53,20 @@ create table public.notes (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-create index notes_user_id_idx on public.notes(user_id);
+create index if not exists notes_user_id_idx on public.notes(user_id);
 
 -- Analyzer topics
-create table public.analyzer_topics (
+create table if not exists public.analyzer_topics (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references public.profiles(id) on delete cascade,
   title text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-create index analyzer_topics_user_id_idx on public.analyzer_topics(user_id);
+create index if not exists analyzer_topics_user_id_idx on public.analyzer_topics(user_id);
 
 -- Analyzer sections
-create table public.analyzer_sections (
+create table if not exists public.analyzer_sections (
   id uuid primary key default uuid_generate_v4(),
   topic_id uuid not null references public.analyzer_topics(id) on delete cascade,
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -74,12 +74,13 @@ create table public.analyzer_sections (
   content text not null default '',
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint analyzer_sections_topic_section_unique unique (topic_id, section_key)
 );
-create index analyzer_sections_topic_id_idx on public.analyzer_sections(topic_id);
+create index if not exists analyzer_sections_topic_id_idx on public.analyzer_sections(topic_id);
 
 -- Work sessions
-create table public.work_sessions (
+create table if not exists public.work_sessions (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references public.profiles(id) on delete cascade,
   task_name text not null default 'Untitled work',
@@ -89,8 +90,8 @@ create table public.work_sessions (
   duration_ms bigint,
   created_at timestamptz not null default now()
 );
-create index work_sessions_user_id_idx on public.work_sessions(user_id);
-create index work_sessions_started_at_idx on public.work_sessions(started_at);
+create index if not exists work_sessions_user_id_idx on public.work_sessions(user_id);
+create index if not exists work_sessions_started_at_idx on public.work_sessions(started_at);
 
 -- Updated_at trigger function
 create or replace function public.handle_updated_at()
@@ -101,24 +102,24 @@ begin
 end;
 $$ language plpgsql;
 
--- Apply triggers
-create trigger handle_updated_at before update on public.profiles for each row execute function public.handle_updated_at();
-create trigger handle_updated_at before update on public.projects for each row execute function public.handle_updated_at();
-create trigger handle_updated_at before update on public.notes for each row execute function public.handle_updated_at();
-create trigger handle_updated_at before update on public.analyzer_topics for each row execute function public.handle_updated_at();
-create trigger handle_updated_at before update on public.analyzer_sections for each row execute function public.handle_updated_at();
+create or replace trigger handle_updated_at_profiles before update on public.profiles for each row execute function public.handle_updated_at();
+create or replace trigger handle_updated_at_projects before update on public.projects for each row execute function public.handle_updated_at();
+create or replace trigger handle_updated_at_notes before update on public.notes for each row execute function public.handle_updated_at();
+create or replace trigger handle_updated_at_topics before update on public.analyzer_topics for each row execute function public.handle_updated_at();
+create or replace trigger handle_updated_at_sections before update on public.analyzer_sections for each row execute function public.handle_updated_at();
 
 -- Auto-create profile on signup
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.profiles(id, email, display_name)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email,'@',1)));
+  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email,'@',1)))
+  on conflict (id) do update set email = excluded.email;
   return new;
 end;
 $$ language plpgsql security definer;
 
-create trigger on_auth_user_created
+create or replace trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
