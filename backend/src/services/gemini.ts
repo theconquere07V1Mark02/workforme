@@ -10,6 +10,7 @@ export interface AvisGenerationContext {
     published_projects?: string[];
     [key: string]: any;
   };
+  apiKeyOverride?: string;
 }
 
 export interface AvisResponse {
@@ -19,14 +20,14 @@ export interface AvisResponse {
 }
 
 export class GeminiService {
-  private ai: GoogleGenAI | null = null;
+  private defaultAi: GoogleGenAI | null = null;
   private modelName = 'gemini-3.8-flash';
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey) {
       try {
-        this.ai = new GoogleGenAI({ apiKey });
+        this.defaultAi = new GoogleGenAI({ apiKey });
       } catch (err) {
         console.warn('Failed to initialize Google Gen AI SDK:', err);
       }
@@ -34,10 +35,20 @@ export class GeminiService {
   }
 
   async generateResponse(params: AvisGenerationContext): Promise<AvisResponse> {
-    const { userMessage, conversationHistory = [], contextData = {} } = params;
+    const { userMessage, conversationHistory = [], contextData = {}, apiKeyOverride } = params;
+    const effectiveKey = apiKeyOverride || process.env.GEMINI_API_KEY;
+
+    let aiClient = this.defaultAi;
+    if (apiKeyOverride && (!aiClient || apiKeyOverride !== process.env.GEMINI_API_KEY)) {
+      try {
+        aiClient = new GoogleGenAI({ apiKey: apiKeyOverride });
+      } catch (err) {
+        console.warn('Failed to initialize on-the-fly GoogleGenAI client:', err);
+      }
+    }
 
     // If Gemini API is configured, invoke gemini-3.8-flash
-    if (this.ai && process.env.GEMINI_API_KEY) {
+    if (aiClient && effectiveKey) {
       try {
         const systemPrompt = `You are A.V.I.S. (Authorative Versatile Incross System), an intelligent personal technology operating system and strategic engineering advisor for Abhishek Gangadhar.
 You have direct telemetry into Abhishek's 28 technology repositories, including flagship platforms like StarkForge CAD, Sovereign OS, Gauri Idols, Cleanslate, and Formcraft.
@@ -47,12 +58,12 @@ ${JSON.stringify(contextData, null, 2)}
 Instructions:
 1. Provide concise, authoritative, and direct engineering answers in clean Markdown.
 2. Emphasize clarity, architectural best practices, and actionable priorities.
-3. Keep responses structured with bullet points where appropriate.`;
+3. Keep responses structured with bullet points and code blocks where appropriate.`;
 
         const messages = conversationHistory.map((m) => `${m.role === 'user' ? 'User' : 'A.V.I.S.'}: ${m.content}`).join('\n\n');
         const fullPrompt = `${systemPrompt}\n\nPrevious Conversation:\n${messages}\n\nUser: ${userMessage}\n\nA.V.I.S.:`;
 
-        const response = await this.ai.models.generateContent({
+        const response = await aiClient.models.generateContent({
           model: this.modelName,
           contents: fullPrompt,
         });
@@ -102,7 +113,7 @@ Instructions:
     return {
       reply,
       suggestedActions,
-      tokensUsed: 80,
+      tokensUsed: 0,
     };
   }
 }

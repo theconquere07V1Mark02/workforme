@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Project, ProjectStatus, ProjectPurpose, OperatingModel, RevenueClass } from '../../types';
+import { Project, ProjectPurpose } from '../../types';
 
 interface ProjectListProps {
   projects: Project[];
@@ -7,6 +7,7 @@ interface ProjectListProps {
   onSelect: (id: string) => void;
   onNew: () => void;
   loading: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export function ProjectList({
@@ -15,6 +16,7 @@ export function ProjectList({
   onSelect,
   onNew,
   loading,
+  onToggleCollapse,
 }: ProjectListProps) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -40,30 +42,71 @@ export function ProjectList({
   }, [projects, search, statusFilter, purposeFilter, revenueFilter]);
 
   return (
-    <div className="side" id="plist" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="side" id="plist" style={{ display: 'flex', flexDirection: 'column', height: '100%', borderRight: 'none' }}>
       {/* Search and filter header */}
-      <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--ln)', flex: 'none' }}>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Filter projects, tags, tech…"
-          style={{
-            width: '100%',
-            padding: '6px 8px',
-            fontSize: '10.5px',
-            border: '1px solid var(--ln2)',
-            background: 'rgba(0,0,0,0.2)',
-            color: 'var(--tx)',
-          }}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-          <span style={{ fontSize: '9.5px', color: 'var(--mut)' }}>
-            {filtered.length} of {projects.length}
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--ln)', flex: 'none', background: 'rgba(0,0,0,0.15)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Filter projects, tech, tags…"
+            style={{
+              flex: 1,
+              padding: '6px 9px',
+              fontSize: '11px',
+              border: '1px solid var(--ln2)',
+              background: 'rgba(0,0,0,0.3)',
+              color: 'var(--tx)',
+              borderRadius: '4px',
+            }}
+          />
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              title="Collapse project list"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid var(--ln2)',
+                color: 'var(--dim)',
+                padding: '6px 8px',
+                cursor: 'pointer',
+                fontSize: '11px',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--gold)';
+                e.currentTarget.style.borderColor = 'rgba(240, 180, 41, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--dim)';
+                e.currentTarget.style.borderColor = 'var(--ln2)';
+              }}
+            >
+              ◀
+            </button>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+          <span style={{ fontSize: '9.5px', color: 'var(--mut)', fontFamily: "'Martian Mono', monospace" }}>
+            {filtered.length} of {projects.length} PROJECTS
           </span>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            style={{ fontSize: '9.5px', color: showFilters ? 'var(--gold)' : 'var(--dim)' }}
+            style={{
+              fontSize: '9.5px',
+              color: showFilters ? 'var(--gold)' : 'var(--dim)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
           >
             {showFilters ? 'Hide filters ▲' : 'Filters ▼'}
           </button>
@@ -140,7 +183,9 @@ export function ProjectList({
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <span className={`dot ${p.status}`} />
-            <b style={{ flex: 1 }}>{p.name || 'Untitled'}</b>
+            <b style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {p.name || 'Untitled'}
+            </b>
             {p.featured && (
               <span title="Featured in Showcase" style={{ color: 'var(--gold)', fontSize: '10px' }}>
                 ★

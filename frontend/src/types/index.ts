@@ -113,6 +113,7 @@ export interface ProjectDocument {
   title: string;
   doc_type: 'diagram' | 'spec' | 'guide' | 'asset' | 'license' | 'other';
   file_url: string;
+  file_name?: string | null;
   file_size: number | null;
   mime_type: string | null;
   is_public: boolean;
@@ -243,6 +244,8 @@ export interface AvisMessage {
   content: string;
   structured_data: Record<string, any> | null;
   suggested_actions: any[] | null;
+  action_proposals?: any[] | null;
+  model_used?: string | null;
   tokens_used: number | null;
   created_at: string;
 }

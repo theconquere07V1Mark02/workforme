@@ -75,11 +75,14 @@ export async function sendMessage(req: AuthenticatedRequest, res: Response): Pro
     .reverse()
     .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
+  const customApiKey = (req.headers['x-gemini-api-key'] as string) || req.body.apiKey;
+
   // 3. Generate response using Gemini service with provider abstraction
   const avisResult = await geminiService.generateResponse({
     userMessage: content,
     conversationHistory: formattedHistory,
     contextData,
+    apiKeyOverride: customApiKey,
   });
 
   // 4. Save assistant reply

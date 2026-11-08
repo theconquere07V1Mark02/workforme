@@ -14,7 +14,9 @@ import { GrowthPage } from './pages/workspace/GrowthPage';
 import { ShowcaseCMSPage } from './pages/workspace/ShowcaseCMSPage';
 import { StoragePage } from './pages/workspace/StoragePage';
 import { AvisPage } from './pages/workspace/AvisPage';
+import { ExecutivePortal } from './pages/executive/ExecutivePortal';
 import { PublicShowcase } from './components/Showcase/PublicShowcase';
+import { PublicDocSharePage } from './pages/public/PublicDocSharePage';
 
 function PrivateWorkspaceWrapper({
   children,
@@ -67,6 +69,7 @@ export default function App() {
           {/* ======================================================== */}
           <Route path="/showcase" element={<PublicShowcase />} />
           <Route path="/showcase/*" element={<PublicShowcase />} />
+          <Route path="/share/doc/:id" element={<PublicDocSharePage />} />
 
           {/* ======================================================== */}
           {/* WEBSITE 1: JARVIS WORKSPACE (Private Control Center)     */}
@@ -93,6 +96,27 @@ export default function App() {
             <Route path="storage" element={<StoragePage />} />
             <Route path="avis" element={<AvisPage />} />
           </Route>
+
+          {/* ======================================================== */}
+          {/* WEBSITE 3: EXECUTIVE ARCHITECT PLATFORM (Standalone)     */}
+          {/* Full-Viewport Command Dossier, Multi-Page Architecture   */}
+          {/* ======================================================== */}
+          <Route
+            path="/profile"
+            element={
+              <PrivateWorkspaceWrapper onIntro={() => setShowIntro(true)}>
+                <ExecutivePortal />
+              </PrivateWorkspaceWrapper>
+            }
+          />
+          <Route
+            path="/executive"
+            element={
+              <PrivateWorkspaceWrapper onIntro={() => setShowIntro(true)}>
+                <ExecutivePortal />
+              </PrivateWorkspaceWrapper>
+            }
+          />
 
           {/* Fallback Catch-all Route */}
           <Route path="*" element={<Navigate to="/" replace />} />
