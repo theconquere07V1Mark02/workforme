@@ -244,10 +244,12 @@ export function ProjectDetail({ project, onUpdate, onDelete }: ProjectDetailProp
         <div
           style={{
             display: 'flex',
-            borderBottom: '1px solid var(--ln2)',
-            marginTop: '22px',
-            marginBottom: '20px',
-            gap: '1px',
+            gap: '8px',
+            marginTop: '24px',
+            marginBottom: '28px',
+            paddingBottom: '12px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            overflowX: 'auto',
           }}
         >
           {(
@@ -264,19 +266,21 @@ export function ProjectDetail({ project, onUpdate, onDelete }: ProjectDetailProp
               type="button"
               onClick={() => setTab(k)}
               style={{
-                padding: '8px 14px',
-                borderBottom: tab === k ? '2px solid var(--tx)' : '2px solid transparent',
-                color: tab === k ? 'var(--tx)' : 'var(--dim)',
-                background: tab === k ? 'rgba(255,255,255,0.03)' : 'transparent',
-                fontWeight: tab === k ? 500 : 300,
-                fontSize: '11px',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: tab === k ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid transparent',
+                color: tab === k ? '#fff' : '#8a90a6',
+                background: tab === k ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                fontWeight: tab === k ? 600 : 400,
+                fontSize: '12.5px',
+                transition: 'all 0.12s',
+                whiteSpace: 'nowrap',
               }}
             >
               {label}
             </button>
           ))}
         </div>
-
         {/* TAB 1: GENERAL */}
         {tab === 'general' && (
           <div>

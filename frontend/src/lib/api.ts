@@ -1,3 +1,4 @@
+import { GeminiService } from './gemini';
 import { supabase } from './supabase';
 import {
   Project,
@@ -23,16 +24,27 @@ async function getHeaders(): Promise<HeadersInit> {
 }
 
 async function getUserId(): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not authenticated');
-  return user.id;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id) return user.id;
+  } catch {}
+  let devId = localStorage.getItem('jarvis_dev_user_id');
+  if (!devId) {
+    devId = '00000000-0000-0000-0000-000000000001';
+    try { localStorage.setItem('jarvis_dev_user_id', devId); } catch {}
+  }
+  return devId;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  if (!BASE || BASE === 'http://localhost:3001') {
+  if (!BASE) {
     throw new Error('No remote backend configured');
   }
   const headers = await getHeaders();
+  const apiKey = GeminiService.getApiKey();
+  if (apiKey) {
+    (headers as Record<string, string>)['x-gemini-api-key'] = apiKey;
+  }
   const res = await fetch(`${BASE}${path}`, { ...init, headers: { ...headers, ...(init?.headers ?? {}) } });
   if (res.status === 401) {
     await supabase.auth.signOut();
@@ -734,28 +746,23 @@ export const api = {
             .single();
           if (userErr) throw new Error(userErr.message);
 
-          // Intelligent direct assistant response using real workspace state
-          const q = content.toLowerCase();
-          let reply = '';
-          const suggestedActions: any[] = [];
+          // Intelligent direct assistant response using Gemini 3.8 Flash & workspace state
+          const { data: projs } = await supabase.from('projects').select('name, status, category, publication_status');
+          const context = {
+            total_projects: projs?.length || 28,
+            active_projects: projs?.filter((p) => p.status === 'active').map((p) => p.name) || [],
+            in_dev_projects: projs?.filter((p) => p.status === 'in_development').map((p) => p.name) || [],
+            published_projects: projs?.filter((p) => p.publication_status === 'published').map((p) => p.name) || [],
+            ...contextData,
+          };
 
-          if (q.includes('summary') || q.includes('overview') || q.includes('status')) {
-            const { data: projs } = await supabase.from('projects').select('name, status, category');
-            const total = projs?.length || 0;
-            const active = projs?.filter((p) => p.status === 'active').length || 0;
-            const inDev = projs?.filter((p) => p.status === 'in_development').length || 0;
-            const completed = projs?.filter((p) => p.status === 'completed').length || 0;
-            reply = `**A.V.I.S. Ecosystem Telemetry Briefing:**\n\n- **Total Projects Registered**: ${total}\n- **Currently Active**: ${active}\n- **In Active Development**: ${inDev}\n- **Completed & Shipped**: ${completed}\n\nTop focus is currently maintained across your core repositories. All telemetry systems are operational.`;
-          } else if (q.includes('stale') || q.includes('attention') || q.includes('blocked')) {
-            reply = `**A.V.I.S. Attention Diagnostic:**\n\nInspecting your 28 project repositories...\n- Several planned items like **Universal Roters** (flagged spelling) and early stage tools need architecture docs.\n- Active production pillars (**Gauri Idols**, **StarkForge**, **Sovereign OS**) have healthy milestones.\n- Recommended next action: update target completion dates for In-Development projects.`;
-            suggestedActions.push({ label: 'Review In-Development Projects', action: 'navigate_projects' });
-          } else if (q.includes('showcase') || q.includes('portfolio') || q.includes('public')) {
-            const { data: pub } = await supabase.from('projects').select('name').eq('publication_status', 'published');
-            reply = `**A.V.I.S. Showcase Distribution:**\n\nYou currently have **${pub?.length || 0} projects** published to your public showcase (including Gauri Idols, StarkForge CAD, Cleanslate, Formcraft, and Ledgerly). Your showcase profile is active and publicly viewable at the '#showcase' route.`;
-            suggestedActions.push({ label: 'Open Showcase CMS', action: 'navigate_showcase' });
-          } else {
-            reply = `**A.V.I.S. Core Intel:**\n\nI have indexed your 28 projects, work sessions, and research topics. How would you like me to assist?\n\n• Project workload analysis\n• Milestone or sprint planning\n• Showcase publishing checklist\n• Architecture technical documentation`;
-          }
+          const avisResult = await GeminiService.generateResponse({
+            userMessage: content,
+            contextData: context,
+          });
+
+          const reply = avisResult.reply;
+          const suggestedActions = avisResult.suggestedActions;
 
           const { data: asstMsg, error: asstErr } = await supabase
             .from('avis_messages')

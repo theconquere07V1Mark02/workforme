@@ -17,6 +17,7 @@ export function AvisPage() {
       analyzer: '/analyzer',
       storage: '/storage',
       dashboard: '/dashboard',
+      profile: '/profile',
     };
     navigate(routeMap[tab] || '/dashboard');
   };

@@ -8,7 +8,7 @@ interface AvisFloatingWidgetProps {
 }
 
 export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
-  const { messages, loading, isOpen, toggleOpen, setIsOpen, sendMessage } = useAvis();
+  const { messages, loading, isOpen, toggleOpen, setIsOpen, sendMessage, hasApiKey, hasKey, setIsSettingsOpen } = useAvis();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -40,31 +40,31 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
         title="A.V.I.S. AI Core Assistant"
         style={{
           position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          width: '52px',
-          height: '52px',
+          bottom: '28px',
+          right: '28px',
+          width: '56px',
+          height: '56px',
           borderRadius: '50%',
           background: 'linear-gradient(135deg, #18140c 0%, #08080a 100%)',
           border: '1.5px solid var(--gold)',
           boxShadow: isOpen
-            ? '0 0 24px rgba(240, 180, 41, 0.6), inset 0 0 10px rgba(240, 180, 41, 0.3)'
-            : '0 8px 24px rgba(0, 0, 0, 0.7), 0 0 14px rgba(240, 180, 41, 0.25)',
+            ? '0 0 30px rgba(240, 180, 41, 0.7), inset 0 0 14px rgba(240, 180, 41, 0.4)'
+            : '0 12px 32px rgba(0, 0, 0, 0.8), 0 0 16px rgba(240, 180, 41, 0.3)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 9999,
           cursor: 'pointer',
           transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-          transform: isOpen ? 'scale(0.95)' : 'scale(1)',
+          transform: isOpen ? 'scale(0.92)' : 'scale(1)',
         }}
       >
-        {/* Arc reactor concentric circles */}
+        {/* Arc reactor concentric rings */}
         <div
           style={{
             position: 'absolute',
-            width: '36px',
-            height: '36px',
+            width: '40px',
+            height: '40px',
             borderRadius: '50%',
             border: '1px dashed rgba(240, 180, 41, 0.45)',
             animation: 'spin 20s linear infinite',
@@ -73,10 +73,10 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
         <div
           style={{
             position: 'absolute',
-            width: '24px',
-            height: '24px',
+            width: '26px',
+            height: '26px',
             borderRadius: '50%',
-            border: '1px solid rgba(240, 180, 41, 0.6)',
+            border: '1px solid rgba(240, 180, 41, 0.65)',
           }}
         />
         <div
@@ -85,7 +85,7 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
             height: '10px',
             borderRadius: '50%',
             background: 'var(--gold)',
-            boxShadow: '0 0 10px var(--gold)',
+            boxShadow: '0 0 12px var(--gold)',
             animation: 'pu 2s ease-in-out infinite',
           }}
         />
@@ -96,42 +96,42 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
         <div
           style={{
             position: 'fixed',
-            bottom: '86px',
-            right: '24px',
-            width: '380px',
-            height: '520px',
-            maxWidth: 'calc(100vw - 32px)',
-            maxHeight: 'calc(100vh - 100px)',
-            background: 'linear-gradient(165deg, #101017 0%, #040406 75%)',
-            border: '1px solid var(--ln2)',
-            borderRadius: '4px',
-            boxShadow: '0 24px 60px rgba(0,0,0,0.85), 0 0 30px rgba(240, 180, 41, 0.08)',
+            bottom: '96px',
+            right: '28px',
+            width: '400px',
+            height: '560px',
+            maxWidth: 'calc(100vw - 36px)',
+            maxHeight: 'calc(100vh - 120px)',
+            background: 'linear-gradient(165deg, #10121c 0%, #05060a 80%)',
+            border: '1px solid rgba(240, 180, 41, 0.3)',
+            borderRadius: '8px',
+            boxShadow: '0 30px 80px rgba(0, 0, 0, 0.9), 0 0 30px rgba(240, 180, 41, 0.1)',
             display: 'flex',
             flexDirection: 'column',
             zIndex: 9999,
             overflow: 'hidden',
-            fontFamily: 'var(--mono)',
-            fontSize: '11px',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '12.5px',
           }}
         >
           {/* Header */}
           <div
             style={{
-              padding: '12px 14px',
-              borderBottom: '1px solid var(--ln)',
+              padding: '14px 18px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
               background: 'rgba(255, 255, 255, 0.02)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              flex: 'none',
+              flexShrink: 0,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span
                 style={{
                   display: 'inline-block',
-                  width: '6px',
-                  height: '6px',
+                  width: '7px',
+                  height: '7px',
                   borderRadius: '50%',
                   background: 'var(--gold)',
                   boxShadow: '0 0 8px var(--gold)',
@@ -139,10 +139,19 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
                 }}
               />
               <div>
-                <b style={{ color: 'var(--tx)', letterSpacing: '0.06em', fontSize: '11.5px' }}>
+                <b style={{ color: '#fff', letterSpacing: '0.04em', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif" }}>
                   A.V.I.S. COPILOT
                 </b>
-                <span style={{ color: 'var(--mut)', fontSize: '9px', marginLeft: '6px' }}>v2.0</span>
+                <span
+                  style={{
+                    color: hasKey ? '#4ade80' : '#fbbf24',
+                    fontSize: '10px',
+                    marginLeft: '8px',
+                    fontFamily: "'Martian Mono', monospace",
+                  }}
+                >
+                  {hasKey ? 'Gemini 3.8 Flash' : 'Key Required'}
+                </span>
               </div>
             </div>
 
@@ -150,15 +159,29 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
               <button
                 onClick={() => {
                   setIsOpen(false);
+                  setIsSettingsOpen(true);
+                }}
+                title="Configure Gemini API key"
+                style={{
+                  color: '#8a90a6',
+                  fontSize: '12px',
+                  padding: '2px 6px',
+                }}
+              >
+                ⚙
+              </button>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
                   navigate('/avis');
                 }}
                 title="Open full-screen chat"
                 style={{
-                  color: 'var(--dim)',
-                  fontSize: '10px',
-                  border: '1px solid var(--ln)',
-                  padding: '2px 6px',
-                  borderRadius: '2px',
+                  color: 'var(--gold)',
+                  fontSize: '11px',
+                  border: '1px solid rgba(240, 180, 41, 0.3)',
+                  padding: '3px 8px',
+                  borderRadius: '3px',
                 }}
               >
                 Full view ↗
@@ -167,9 +190,9 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
                 onClick={() => setIsOpen(false)}
                 aria-label="Close"
                 style={{
-                  color: 'var(--mut)',
-                  fontSize: '14px',
-                  lineHeight: '1',
+                  color: '#8a90a6',
+                  fontSize: '16px',
+                  lineHeight: 1,
                   padding: '2px 4px',
                 }}
               >
@@ -181,24 +204,25 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
           {/* Quick Prompts Bar */}
           <div
             style={{
-              padding: '8px 12px',
-              borderBottom: '1px solid var(--ln)',
+              padding: '8px 14px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
               display: 'flex',
               gap: '6px',
               overflowX: 'auto',
               whiteSpace: 'nowrap',
-              background: 'rgba(0,0,0,0.3)',
-              flex: 'none',
+              background: 'rgba(0, 0, 0, 0.3)',
+              flexShrink: 0,
             }}
           >
             <button
               onClick={() => handleQuickPrompt('Give me a brief ecosystem telemetry status.')}
               style={{
-                fontSize: '9.5px',
-                color: 'var(--dim)',
-                border: '1px solid var(--ln)',
-                padding: '3px 8px',
-                borderRadius: '2px',
+                fontSize: '10.5px',
+                color: '#9aa0b6',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '4px 10px',
+                borderRadius: '3px',
+                background: 'rgba(255, 255, 255, 0.03)',
               }}
             >
               Status brief
@@ -206,11 +230,12 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
             <button
               onClick={() => handleQuickPrompt('What projects require immediate attention or are blocked?')}
               style={{
-                fontSize: '9.5px',
-                color: 'var(--dim)',
-                border: '1px solid var(--ln)',
-                padding: '3px 8px',
-                borderRadius: '2px',
+                fontSize: '10.5px',
+                color: '#9aa0b6',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '4px 10px',
+                borderRadius: '3px',
+                background: 'rgba(255, 255, 255, 0.03)',
               }}
             >
               Blockers audit
@@ -218,11 +243,12 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
             <button
               onClick={() => handleQuickPrompt('Review showcase readiness for published projects.')}
               style={{
-                fontSize: '9.5px',
-                color: 'var(--dim)',
-                border: '1px solid var(--ln)',
-                padding: '3px 8px',
-                borderRadius: '2px',
+                fontSize: '10.5px',
+                color: '#9aa0b6',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '4px 10px',
+                borderRadius: '3px',
+                background: 'rgba(255, 255, 255, 0.03)',
               }}
             >
               Showcase audit
@@ -234,10 +260,10 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
             style={{
               flex: 1,
               overflowY: 'auto',
-              padding: '14px',
+              padding: '16px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '12px',
+              gap: '14px',
             }}
           >
             {messages.map((m) => {
@@ -248,12 +274,12 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
                   style={{
                     alignSelf: isUser ? 'flex-end' : 'flex-start',
                     maxWidth: '88%',
-                    background: isUser ? 'rgba(255, 255, 255, 0.07)' : 'rgba(240, 180, 41, 0.05)',
-                    border: `1px solid ${isUser ? 'var(--ln2)' : 'rgba(240, 180, 41, 0.2)'}`,
-                    padding: '8px 11px',
-                    borderRadius: '3px',
-                    color: isUser ? 'var(--tx)' : '#f5e8c8',
-                    fontSize: '11px',
+                    background: isUser ? 'rgba(255, 255, 255, 0.08)' : 'rgba(240, 180, 41, 0.06)',
+                    border: `1px solid ${isUser ? 'rgba(255, 255, 255, 0.14)' : 'rgba(240, 180, 41, 0.25)'}`,
+                    padding: '10px 14px',
+                    borderRadius: '6px',
+                    color: isUser ? '#fff' : '#f5e8c8',
+                    fontSize: '12.5px',
                     lineHeight: '1.6',
                     wordBreak: 'break-word',
                   }}
@@ -267,12 +293,12 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
               <div
                 style={{
                   alignSelf: 'flex-start',
-                  background: 'rgba(240, 180, 41, 0.04)',
-                  border: '1px solid rgba(240, 180, 41, 0.15)',
-                  padding: '6px 10px',
-                  borderRadius: '3px',
+                  background: 'rgba(240, 180, 41, 0.06)',
+                  border: '1px solid rgba(240, 180, 41, 0.2)',
+                  padding: '8px 12px',
+                  borderRadius: '4px',
                   color: 'var(--gold)',
-                  fontSize: '10px',
+                  fontSize: '11px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
@@ -298,12 +324,12 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
           <form
             onSubmit={handleSubmit}
             style={{
-              padding: '10px 12px',
-              borderTop: '1px solid var(--ln)',
-              background: 'rgba(0,0,0,0.4)',
+              padding: '12px 14px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'rgba(0, 0, 0, 0.4)',
               display: 'flex',
               gap: '8px',
-              flex: 'none',
+              flexShrink: 0,
             }}
           >
             <input
@@ -313,21 +339,27 @@ export function AvisFloatingWidget({ projects = [] }: AvisFloatingWidgetProps) {
               placeholder="Ask A.V.I.S. anything…"
               style={{
                 flex: 1,
-                borderBottom: '1px solid var(--ln2)',
-                color: 'var(--tx)',
-                padding: '4px 0',
-                fontSize: '11px',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: '4px',
+                color: '#fff',
+                padding: '8px 12px',
+                fontSize: '12.5px',
+                background: 'rgba(255, 255, 255, 0.03)',
               }}
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
               style={{
-                padding: '4px 10px',
-                border: '1px solid var(--ln2)',
-                color: 'var(--tx)',
-                fontSize: '10px',
+                padding: '0 14px',
+                borderRadius: '4px',
+                border: 'none',
+                background: 'var(--gold)',
+                color: '#000',
+                fontWeight: 600,
+                fontSize: '12px',
                 opacity: loading || !input.trim() ? 0.4 : 1,
+                cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
               }}
             >
               Send
